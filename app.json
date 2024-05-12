@@ -31,6 +31,12 @@
         "projectId": "2069a7ca-f9f0-46a2-9954-8121caee629a"
       }
     },
-    "owner": "benhavis"
+    "owner": "benhavis",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2069a7ca-f9f0-46a2-9954-8121caee629a"
+    }
   }
 }
