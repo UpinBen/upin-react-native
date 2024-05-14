@@ -15,10 +15,13 @@ import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { fontSizes, MAPBOX_TOKEN_API } from "../utils/config";
 import { formatDateTime } from "../utils/functions";
+import { FontAwesome5 } from "@expo/vector-icons";
+import CameraButton from "../CameraButton";
 import { supabase } from "../utils/supabase";
 import VerticalCarousel from "./VerticalCarousel";
 import { AuthContext } from "../utils/AuthContext";
 import { NextButton, PrevButton } from "../Buttons";
+import colors from "../utils/colors";
 
 const CreatePin = () => {
   const [step, setStep] = useState(1);
@@ -229,7 +232,7 @@ const CreatePin = () => {
       {step === 2 && (
         <View style={createPinStyles.descriptionContainer}>
           <View style={createPinStyles.textContainer}>
-            <Text>Describe Your Event</Text>
+            <Text style={createPinStyles.headerText}>Describe Your Event</Text>
             <TextInput
               style={createPinStyles.input}
               onChangeText={(text) => setPinTitle(text)}
@@ -252,13 +255,18 @@ const CreatePin = () => {
       )}
 
       {step == 3 && (
-        <View style={createPinStyles.stepContainer}>
-          <Button title="Pick an image from camera roll" onPress={pickImage} />
-          {image && (
-            <Image source={{ uri: image }} style={createPinStyles.image} />
-          )}
-          <PrevButton onPress={handlePreviousStep} />
-          <NextButton onPress={handleNextStep} />
+        <View>
+          <View style={createPinStyles.cameraContainer}>
+            <CameraButton onPress={pickImage} />
+            {image && (
+              <Image source={{ uri: image }} style={createPinStyles.image} />
+            )}
+          </View>
+
+          <View style={createPinStyles.buttonContainer}>
+            <PrevButton onPress={handlePreviousStep} />
+            <NextButton onPress={handleNextStep} />
+          </View>
         </View>
       )}
 
@@ -317,10 +325,11 @@ const createPinStyles = StyleSheet.create({
   text: {
     fontSize: fontSizes.h4,
     marginBottom: 5,
+    marginTop: 10,
   },
   stepText: {
-    fontSize: fontSizes.h3,
-    marginTop: 10,
+    fontSize: fontSizes.h2,
+    marginTop: "20%",
     marginBottom: 10,
   },
   paragraph: {
@@ -352,6 +361,7 @@ const createPinStyles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignSelf: "center",
     width: "80%",
     marginBottom: 10,
     marginTop: 60,
@@ -368,10 +378,20 @@ const createPinStyles = StyleSheet.create({
     width: "95%",
   },
   textContainer: {
-    marginTop: 50,
     width: "90%",
     alignItems: "center", // Center horizontally
+    alignSelf: "center",
     marginBottom: 60,
+  },
+  headerText: {
+    fontSize: fontSizes.h3,
+    marginBottom: "10%",
+  },
+  cameraText: {
+    color: colors.mainColor,
+  },
+  cameraContainer: {
+    marginBottom: "25%",
   },
   image: {
     width: 100,
