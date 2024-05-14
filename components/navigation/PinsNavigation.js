@@ -2,6 +2,7 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import PinsHeader from '../PinsHeader';
 import CreatePin from '../Pins/CreatePin';
+import PinScreen from '../Screens/PinScreen'
 
 const PinStack = createStackNavigator();
 
