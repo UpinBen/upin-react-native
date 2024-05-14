@@ -1,26 +1,33 @@
 import React, { useEffect, useState, useContext } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Button, Alert, FlatList, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Button, Alert } from 'react-native';
-import { fontSizes } from '../utils/config';
+import { fontSizes, MAPBOX_TOKEN_API } from '../utils/config';
 import { formatDateTime } from '../utils/functions';
 import { supabase } from '../utils/supabase';
 import VerticalCarousel from './VerticalCarousel';
 import { AuthContext } from '../utils/AuthContext';
+import { NextButton, PrevButton } from '../Buttons';
+
 
 const CreatePin = () => {
+        
+    const [step, setStep] = useState(1);
     const carouselData = ["Invite Only", "Public Pin", "Private Pin"];
+    const [activeIndex, setActiveIndex] = useState(0);
     const [pinTitle, setPinTitle] = useState('');
     const [shortDescription, setShortDescription] = useState('');
-    const [step, setStep] = useState(1);
-    const [activeIndex, setActiveIndex] = useState(0);
      const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+     const [location, setLocation] = useState('')
+    const [endDate, setEndDate] = useState(new Date());
+     const [image, setImage] = useState(null);
+     const [locationSuggestions, setLocationSuggestions] = useState([]);
     const navigation = useNavigation();
 
      const { isLoggedIn, userData, userId } = useContext(AuthContext);
 
-     console.log(`user id from create pin: ${userId}`)
+    // console.log(`user id from create pin: ${userId}`)
 
     const handleItemPress = (index) => {
         setActiveIndex(index);
@@ -44,26 +51,96 @@ const CreatePin = () => {
         navigation.navigate('Pins'); 
     };
 
-    const handleNextStep = () => {
-        // Handle advancing to the next step
-        setStep(prevStep => prevStep < 5 ? prevStep + 1 : prevStep);
-    };
+ const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+    
+const searchAddress = async (query) => {
+  try {
+    // Replace the API endpoint with the Mapbox Geocoding API
+    const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN_API}`);
+    const data = await response.json();
+
+    // Extract the relevant address information from the response
+    const suggestions = data.features.map((feature) => ({
+      display_name: feature.place_name,
+      // Add other relevant address fields here
+    }));
+
+    setLocationSuggestions(suggestions);
+  } catch (error) {
+    console.error('Error searching address:', error);
+    setLocationSuggestions([]);
+  }
+};
+
+const handleAddressChange = (text) => {
+  setLocation(text);
+  if (text.length > 2) {
+    searchAddress(text);
+  } else {
+    setLocationSuggestions([]);
+  }
+};
+
+const selectAddress = (address) => {
+  // Handle selecting the address
+  console.log('Selected address:', address);
+  setQuery(address.display_name);
+  setLocationSuggestions([]);
+};
+
+
+const renderItem = ({ item }) => (
+  <TouchableOpacity onPress={() => selectAddress(item)}>
+    <View> 
+      <Text>{item.display_name}</Text>
+    </View>
+  </TouchableOpacity>
+);
+
+
+const handleNextStep = () => {
+    // If the current step is 2 and pinTitle or shortDescription is missing, show alert and return
+    if (step === 2 && (!pinTitle || !shortDescription)) {
+        Alert.alert('Please enter a title and description');
+        return; // Prevent further execution of the function
+    }
+
+    // If the current step is 3 and startDate or endDate is missing, show alert and return
+    if (step === 3 && (!startDate || !endDate)) {
+        Alert.alert('Please enter start and end dates');
+        return; // Prevent further execution of the function
+    }
+
+    // Otherwise, advance to the next step
+    setStep(prevStep => prevStep < 5 ? prevStep + 1 : prevStep);
+};
+
 
     const handlePreviousStep = () => {
         // Handle going back to the previous step
         setStep(prevStep => prevStep > 1 ? prevStep - 1 : prevStep);
     };
-   useEffect(() => {
-        console.log('Index:', carouselData[activeIndex]);
-        console.log('Short Description:', shortDescription);
-        console.log('Pin Title:', pinTitle);
-        console.log('start date: ', startDate)
-    }, [activeIndex, shortDescription, pinTitle, startDate]);
 
-const handleSignUp = async () => {
+
+const handleCreatePin = async () => {
   try {
     // Insert additional user data into the 'pins' table
-    const { error } = await supabase
+    const { data: pinData, error: pinError } = await supabase
       .from('pins')
       .insert({
         host_id: userId,
@@ -72,17 +149,35 @@ const handleSignUp = async () => {
         description: shortDescription,
         start_date: startDate,
         end_date: endDate
-      });
+      }).select('*');
 
-    if (error) {
-      // Handle error if insertion fails
-      Alert.alert('Error', 'An error occurred while saving user data.');
-      console.error('Error saving user data:', error.message);
-    } else {
-      // Handle successful data insertion
-      Alert.alert('Success', 'Data inserted successfully!');
+    // Log pinData[0] before inserting into 'userdata' table
+    console.log('Inserted Pin Data:', pinData[0]);
+
+    console.log('inserted pin id: ', pinData[0].id)
+
+    if (pinError) {
+      // Handle error if insertion into 'pins' table fails
+      Alert.alert('Error', 'An error occurred while saving pin data.');
+      console.error('Error saving pin data:', pinError.message);
+    }
+
+    if (!pinError ) {
+
+              // Reset state variables
+      setPinTitle('');
+      setShortDescription('');
+      setStep(1);
+      setActiveIndex(0);
+      setStartDate(new Date());
+      setEndDate(new Date());
+
+
+      // Handle successful data insertion into both tables
+      Alert.alert('Success', 'Your pin has succesfully been created!');
       console.log('User data saved successfully!');
-      navigation.navigate('Profile'); 
+      
+      navigation.navigate('Pins'); 
     }
   } catch (error) {
     // Handle any unexpected errors
@@ -90,6 +185,7 @@ const handleSignUp = async () => {
     console.error('Unexpected error:', error.message);
   }
 };
+
 
 
 
@@ -111,15 +207,16 @@ const handleSignUp = async () => {
                         activeIndex={activeIndex}
                         onItemPress={handleItemPress}
                     />
-                    <TouchableOpacity onPress={handleNextStep}>
-                        <Text style={[createPinStyles.nextButton, createPinStyles.rightButton]}>Next</Text>
-                    </TouchableOpacity>
+
+                    <NextButton onPress={handleNextStep}/>
                 </>
             )}
 
             {step === 2 && (
-                <>
-                    <TextInput
+                <View style={createPinStyles.descriptionContainer}>
+                    <View style={createPinStyles.textContainer}> 
+                            <Text>Describe Your Event</Text>
+                        <TextInput
                         style={createPinStyles.input}
                         onChangeText={text => setPinTitle(text)}
                         value={pinTitle}
@@ -131,20 +228,50 @@ const handleSignUp = async () => {
                         value={shortDescription}
                         placeholder="Short Description"
                     />
-                    <View style={createPinStyles.buttonContainer}>
-                        {step > 1 && (
-                            <TouchableOpacity onPress={handlePreviousStep}>
-                                <Text style={createPinStyles.prevButton}>Previous</Text>
-                            </TouchableOpacity>
-                        )}
-                        <TouchableOpacity onPress={handleNextStep}>
-                            <Text  style={createPinStyles.nextButton}>Next</Text>
-                        </TouchableOpacity>
                     </View>
-                </>
+
+                    <View style={createPinStyles.buttonContainer}>
+                    <PrevButton onPress={handlePreviousStep}/>
+                      <NextButton onPress={handleNextStep}/>
+                    </View>
+
+                </View>
             )}
 
-               {step == 3 && (
+                {step == 3 && (
+                <View style={createPinStyles.stepContainer}>
+                    <Button title="Pick an image from camera roll" onPress={pickImage} />   
+                 {image && <Image source={{ uri: image }} style={createPinStyles.image}  />}
+                 <PrevButton onPress={handlePreviousStep}/>          
+                   <NextButton onPress={handleNextStep}/>
+                </View>
+            )}
+
+
+  { step == 4 && (
+   
+           <View style={createPinStyles.locationContainer}>
+                    <View>
+      <TextInput
+        placeholder="Enter an address"
+        value={location}
+        onChangeText={handleAddressChange}
+      />
+      <FlatList
+        data={locationSuggestions}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.place_id}
+      />
+    </View>
+                  <PrevButton onPress={handlePreviousStep}/>
+                     <NextButton onPress={handleNextStep}/>
+           </View>
+                    
+            )}
+
+
+
+               {step == 5 && (
                    <>
                      <Text>Start Date: {formatDateTime(startDate)}</Text>
                       <DateTimePicker
@@ -160,14 +287,15 @@ const handleSignUp = async () => {
                         display="default"
                         onChange={onEndDateChange} />
 
-                         <Button title="Sign Up" onPress={handleSignUp} />
+                        
+                           <PrevButton onPress={handlePreviousStep}/>
+                        <Button title="Create Pin" onPress={handleCreatePin} />
                         </>
+                        
             )}
 
 
-            {step == 5 && (
-                <Button title="Sign Up" onPress={handleSignUp} />
-            )}
+        
 
 
         </View>
@@ -177,9 +305,10 @@ const handleSignUp = async () => {
 const createPinStyles = StyleSheet.create({
     container: {
         flex: 1,
-        marginTop: 50,
-        justifyContent: 'center', // Center content vertically
-        alignItems: 'center', // Center content horizontally
+        marginTop: 40,
+   
+        alignItems: 'center', 
+        
     },
     text: {
         fontSize: fontSizes.h4,
@@ -221,7 +350,31 @@ const createPinStyles = StyleSheet.create({
         justifyContent: 'space-between',
         width: '80%',
         marginBottom: 10,
+        marginTop: 60,
+       marginLeft: 10
     },
+    stepContainer: {
+        marginTop: 60,
+        justifyContent: 'center',
+        height: 80,
+        width: '90%',
+
+    },
+    descriptionContainer: {
+        marginTop: '10%',
+        width: '95%'
+
+    },
+    textContainer: {
+        marginTop: 50,
+       width: '90%',
+       alignItems: 'center', // Center horizontally
+       marginBottom: 60
+    },
+      image: {
+    width: 100,
+    height: 100,
+  },
     nextButton: {
         fontSize: fontSizes.h3,
         fontWeight: 'bold',
