@@ -33,7 +33,7 @@ const CreatePin = () => {
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const navigation = useNavigation();
 
-  const { isLoggedIn, userData, userId } = useContext(AuthContext);
+  const { userId } = useContext(AuthContext);
 
   // console.log(`user id from create pin: ${userId}`)
 
