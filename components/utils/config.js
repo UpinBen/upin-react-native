@@ -55,6 +55,7 @@ const getAddressCoordinates = async (address) => {
   }
 };
 
+const MAPBOX_TOKEN_API = 'pk.eyJ1IjoiYmVudXBpbiIsImEiOiJjbHc1b3F1dHMxaXJxMm5xejEzM2t4ejBoIn0.3JekJOf-HMhVkGC0W6Krdg'
 
-export { interestsList, coordinates, fontSizes, getAddressCoordinates };
+export { interestsList, coordinates, fontSizes, getAddressCoordinates, MAPBOX_TOKEN_API };
 
