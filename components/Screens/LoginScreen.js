@@ -1,9 +1,9 @@
 import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert  } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { validateEmail } from './utils/functions';
-import { supabase } from './utils/supabase';
-import { AuthContext } from './utils/AuthContext';
+import { validateEmail } from '../utils/functions';
+import { supabase } from '../utils/supabase';
+import { AuthContext } from '../utils/AuthContext';
 
 const LoginScreen = () => {
    const { login } = useContext(AuthContext);

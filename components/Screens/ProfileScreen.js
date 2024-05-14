@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Button, TouchableOpacity  } from 'react-native';
-import { AuthContext } from './utils/AuthContext';
+import { AuthContext } from '../utils/AuthContext';
 import LoginScreen from './LoginScreen';
 
 const ProfileScreen = () => {

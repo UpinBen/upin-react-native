@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Map from './utils/Map';
-import Header from './Header';
+import Map from '../utils/Map';
+import Header from '../Header';
 
 const HomeScreen = () => {
   return (
