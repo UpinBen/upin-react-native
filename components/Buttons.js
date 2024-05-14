@@ -1,8 +1,8 @@
 // Buttons.js
 
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { fontSizes } from './utils/config';
+import React from "react";
+import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { fontSizes } from "./utils/config";
 
 const NextButton = ({ onPress }) => {
   return (
@@ -12,24 +12,24 @@ const NextButton = ({ onPress }) => {
   );
 };
 
-const PrevButton = ({ onPress}) => {
+const PrevButton = ({ onPress }) => {
   return (
-    <TouchableOpacity onPress={onPress} >
+    <TouchableOpacity onPress={onPress}>
       <Text style={buttonstyles.prevButton}>Previous</Text>
     </TouchableOpacity>
   );
 };
 
 const buttonstyles = StyleSheet.create({
-    nextButton: {
-        fontSize: fontSizes.h3,
-        fontWeight: 'bold',
-        marginBottom: 10
-    },
-        prevButton: {
-        fontSize: fontSizes.h3,
-        fontWeight: 'bold'
-    },
+  nextButton: {
+    fontSize: fontSizes.h3,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  prevButton: {
+    fontSize: fontSizes.h3,
+    fontWeight: "bold",
+  },
 });
 
 export { NextButton, PrevButton };
