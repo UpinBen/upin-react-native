@@ -38,3 +38,22 @@ export  const validatePasswordStrength = (password) => {
     };
     return dateTime.toLocaleString(undefined, options);
   };
+
+export const searchAddress = async (query, setLocationSuggestions) => {
+  try {
+    // Replace the API endpoint with the Mapbox Geocoding API
+    const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN_API}`);
+    const data = await response.json();
+
+    // Extract the relevant address information from the response
+    const suggestions = data.features.map((feature) => ({
+      display_name: feature.place_name,
+      // Add other relevant address fields here
+    }));
+
+    setLocationSuggestions(suggestions);
+  } catch (error) {
+    console.error('Error searching address:', error);
+    setLocationSuggestions([]);
+  }
+};
