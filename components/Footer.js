@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import HomeScreen from './Homescreen';
+import HomeScreen from './Screens/Homescreen';
 import ProfileScreen from './ProfileScreen';
 import Pins from './Pins';
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { SafeAreaView, StyleSheet, Platform, StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from './components/Homescreen';
+import HomeScreen from './components/Screens/Homescreen';
 import BottomNavigation from './components/BottomNavigation';
 import AuthProvider from './components/utils/AuthContext';
 import ProfileNavigator from './components/navigation/ProfileNavigator';
